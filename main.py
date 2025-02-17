@@ -47,32 +47,49 @@ Xte, Yte = torch.tensor(X[b:]), torch.tensor(Y[b:])        # test ds
 
 # create params
 emb_dim = 20
-fan_in, fan_out = block_size * emb_dim, 400
+fan_in, fan_out = block_size * emb_dim, 300
 
 C = torch.randn((vocab_size, emb_dim))
 
-W1 = torch.randn((fan_in, fan_out))
-b1 = torch.randn((fan_out))
+# avoid vanishing gradient using kaiming init
+W1 = torch.randn((fan_in, fan_out)) * (5/3) / (fan_in ** 0.5) 
+b1 = torch.randn((fan_out)) * 0.01 
 
-W2 = torch.randn((fan_out, vocab_size)) * 0.01 # * 0.1 for init W2 in some way that the loss does not go to inf
-b2 = torch.randn((vocab_size)) * 0.01 # * 0.1 for init W2 in some way that the loss does not go to inf
+# init weights in some way that that the loss start from a low number -> this number should be around: -torch.tensor([1 / vocab_size]).log(), in this case is ~3.2958
+W2 = torch.randn((fan_out, vocab_size)) * 0.01
+b2 = torch.randn((vocab_size)) * 0.01 
 
 params = [C, W1, b1, W2, b2]
 num_params = 0
 
-# count tot number of params and # activate grad tracking
+# count tot number of params and activate grad tracking
 for p in params:
   p.requires_grad = True
 
   num_params += p.numel()
 
-# keep track of loss
+# keep track of network data
 lsteps = []
-lloss = []
+ltr_loss = []
+lval_loss = []
+
+# calc val loss
+def calc_val_loss():
+  # test on val set
+  idxs2 = torch.randint(0, Xval.shape[0], size=(batch_size,))
+
+  a = C[Xval[idxs2]].view(-1, fan_in)
+
+  b = a @ W1 + b1
+  c = torch.tanh(b)
+
+  l = c @ W2 + b2
+
+  return nn.functional.cross_entropy(l, Yval[idxs2]).log10().item()
 
 # train network
-batch_size = 64
-steps = 20000
+batch_size = 32
+steps = 200000
 
 for i in range(steps):
   # create network input
@@ -87,10 +104,14 @@ for i in range(steps):
   probs = nn.functional.softmax(logits, dim=1)
 
   # calc loss
-  loss = nn.functional.cross_entropy(logits, Ytr[idxs])
+  loss = -probs[torch.arange(batch_size), Ytr[idxs]].log().mean()
 
   lsteps.append(i)
-  lloss.append(loss.item())
+  
+  ltr_loss.append(loss.log10().item())
+
+  val_loss = calc_val_loss()
+  lval_loss.append(val_loss)
 
   # set grat to None
   for p in params:
@@ -100,16 +121,16 @@ for i in range(steps):
   loss.backward()
 
   # gradient steps
-  lr = 0.01
+  lr = 0.1 if i < 100000 else 0.01
 
   for p in params:
     p.data += lr * -p.grad
 
   # stats
   if i % (steps * 0.1) == 0:
-    print(f'step {i} / {steps} | loss: {loss.item()}')
-  
-print(f'step {steps} / {steps} | loss: {loss.item()}')
+    print(f'step {i} / {steps} | loss: {loss.item():.3f}')
+
+print(f'step {steps} / {steps} | loss: {loss.item():.3f}')
 
 # test on train set
 x_emb = C[Xtr].view(-1, fan_in)
