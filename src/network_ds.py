@@ -26,15 +26,14 @@ for text in data:
   text += 'ε'
 
   x = [stoi['Σ']] * block_size
-  #print(text)
+  
   for chr in text:
     y = stoi[chr]
 
     X.append(x)
     Y.append(y)
-    #print(''.join([itos[i] for i in x]), '->', itos[y])
+
     x = x[1:] + [stoi[chr]]
-  #print('-------')
 
 # split dataset
 a = int(0.8 * len(X)) # 80% train 
