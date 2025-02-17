@@ -1,3 +1,4 @@
+import torch.nn as nn
 import torch
 
 from network_ds import Xtr, Ytr
@@ -24,8 +25,8 @@ for i in range(steps):
   loss = -probs[torch.arange(batch_size), Ytr[idxs]].log().mean()
 
   # set grad to None
-  for p in net.params:
-    if isinstance(p, list):
+  for p in net.params.values():
+    if isinstance(p, nn.ParameterList):
         for j in p:
             j.grad = None # more efficenly to put None then 0
     else:
@@ -38,8 +39,8 @@ for i in range(steps):
   lr = 0.1 if i < 100000 else 0.01
 
   with torch.no_grad():
-    for p in net.params:
-        if isinstance(p, list):
+    for p in net.params.values():
+        if isinstance(p, nn.ParameterList):
            for j in p:
                 if j.grad is not None:
                     j -= lr * j.grad
@@ -56,3 +57,6 @@ for i in range(steps):
     print(f'step {i} / {steps} | loss: {loss.item():.3f}')
 
 print(f'step {steps} / {steps} | loss: {loss.item():.3f}')
+
+# save network params
+net.save()

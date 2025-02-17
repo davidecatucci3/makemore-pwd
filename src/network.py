@@ -1,5 +1,7 @@
 import torch.nn as nn
+import random
 import torch
+import json
 
 from network_ds import vocab_size, Xtr
 from hyperparameters import hyperparams
@@ -14,8 +16,11 @@ fan_out = hyperparams['dimension hidden layers']
 
 # network
 class Network:
-  def __init__(self):
-    self.init_params()
+  def __init__(self, load=False):
+    if not load:
+      self.init_params()
+    else:
+      self.load()
   
   def init_params(self):
     self.fan_in = block_size * emb_dim
@@ -43,7 +48,7 @@ class Network:
     self.bnmean_running = torch.ones((1, fan_out))
     self.bnstd_running = torch.zeros((1, fan_out))
 
-    self.params = [self.C, self.w, self.b, self.bngain, self.bnbias]
+    self.params = {'C': self.C, 'w': self.w, 'b': self.b, 'bngain': self.bngain, 'bnbias': self.bnbias}
 
     self.num_params = self.C.numel() + sum([w.numel() for w in self.w]) + sum([b.numel() for b in self.b]) + self.bngain.numel() + self.bnbias.numel()
 
@@ -73,4 +78,33 @@ class Network:
     probs = nn.functional.softmax(x, dim=1) # (B, V), V = vocab_size
 
     return probs
-  
+
+  def save(self):
+    path = 'data/'
+
+    for n, p in self.params.items():
+       if isinstance(p, nn.ParameterList):
+            d = {}
+
+            for i in p:
+                if len(i.data.shape) == 2:
+                    r, c = i.data.shape
+                else:
+                    r = i.data.shape[0]
+                    c = 1
+
+                k = f'{r}x{c}_{random.random()}'
+
+                d[k] = i.tolist()
+       
+            with open(path + n + '.json', 'w') as f:
+                json.dump(d, f, indent=4)
+       else:
+          with open(path + n + '.json', 'w') as f:
+            json.dump(p.tolist(), f, indent=4)
+
+  def load(self):
+    pass
+
+
+
