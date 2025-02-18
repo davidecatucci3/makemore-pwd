@@ -10,25 +10,7 @@ from train import train
 block_size = hyperparams['block size']
 
 # network
-lossi, probs, sprobs = train()
-
-'''plt.plot(torch.tensor(lossi).view(-1, 1000).mean(1))
-plt.show()'''
-
-# Create a figure with 1 row and 2 columns for side-by-side plots
-fig, axes = plt.subplots(1, 2, figsize=(12, 6))  # (1 row, 2 columns)
-
-# Plot the first histogram on the first axis
-axes[0].hist(sprobs[34].detach(), bins=50)
-axes[0].set_title('Histogram of sprobs')
-
-# Plot the second histogram on the second axis
-axes[1].hist(probs[34].detach(), bins=50)
-axes[1].set_title('Histogram of probs')
-
-# Show the plots
-plt.tight_layout()  # Adjust spacing between subplots
-plt.show()
+train()
 
 net = Network(load=True)
 
