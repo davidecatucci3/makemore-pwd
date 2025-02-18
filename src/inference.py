@@ -3,11 +3,14 @@ import torch
 from hyperparameters import hyperparams
 from network_ds import stoi, itos
 from network import Network
+from train import train
 
 # hyperparams
 block_size = hyperparams['block size']
 
 # network
+train()
+
 net = Network(load=True)
 
 # inference (generate passwords)
