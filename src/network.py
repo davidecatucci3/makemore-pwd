@@ -32,11 +32,11 @@ class Network:
     layers = [self.fan_in] + [fan_out] * num_layers + [vocab_size]
 
     # embedding tensor
-    self.C = torch.randn(size=(vocab_size, emb_dim), requires_grad=True)
+    self.C = nn.Parameter(torch.randn(size=(vocab_size, emb_dim)))
 
     # weights (avoid vanishing gradient and high loss at the start using kaiming init)
     self.w = nn.ParameterList([
-            nn.Parameter(torch.randn(_in, _out) * (5/3) / (self.fan_in ** 0.5))
+            nn.Parameter(torch.randn(_in, _out) * ((5/3) / (_in ** 0.5)))
             for _in, _out in zip(layers, layers[1:])
     ])
     
@@ -47,15 +47,15 @@ class Network:
     ])
 
     # batch normalization
-    self.bngain = torch.ones(size=(1, fan_out), requires_grad=True)
-    self.bnbias = torch.zeros(size=(1, fan_out), requires_grad=True)
+    self.bngain = nn.Parameter(torch.ones(size=(1, fan_out)))
+    self.bnbias = nn.Parameter(torch.zeros(size=(1, fan_out)))
 
     self.bnmean_running = torch.ones((1, fan_out))
     self.bnstd_running = torch.zeros((1, fan_out))
 
-    self.params = {'C': self.C, 'w': self.w, 'b': self.b, 'bngain': self.bngain, 'bnbias': self.bnbias}
+    self.params = {'C': self.C, 'w': self.w, 'b': self.b} # 'bngain': self.bngain, 'bnbias': self.bnbias}
 
-    self.num_params = self.C.numel() + sum([w.numel() for w in self.w]) + sum([b.numel() for b in self.b]) + self.bngain.numel() + self.bnbias.numel()
+    self.num_params = self.C.numel() + sum(w.numel() for w in self.w) + sum(b.numel() for b in self.b) + self.bngain.numel() + self.bnbias.numel()
 
   def forward(self, x):
     '''
@@ -63,29 +63,29 @@ class Network:
     '''
 
     for w, b in zip(self.w, self.b):
-        z = x @ w + b 
+      z = x @ w + b 
        
-        # batch normalization
-        if self.train:
-          if self.bngain.shape[-1] == z.shape[-1]: # skip batch normalization after the last layer
-              bnmeani = z.mean(0, keepdim=True)
-              bnstdi = z.std(0, keepdim=True)
+      # batch normalization
+      '''
+      if self.train:
+        if self.bngain.shape[-1] == z.shape[-1]: # skip batch normalization after the last layer
+            bnmeani = z.mean(0, keepdim=True)
+            bnstdi = z.std(0, keepdim=True)
 
-              z = self.bngain * (z - bnmeani) / bnstdi + self.bnbias 
-        else:
-          if self.bngain.shape[-1] == z.shape[-1]:
-            z = self.bngain * (z - self.bnmean_running) / self.bnstd_running + self.bnbias 
-   
-        a = torch.tanh(z)
+            xhat = (z - bnmeani) / torch.sqrt(bnstdi + 1e-5)
+            z = self.bngain * xhat + self.bnbias 
+            
+        with torch.no_grad():
+          self.sbnmean_running = 0.999 * self.bnmean_running + 0.001 * bnmeani
+          self.bnstd_running = 0.999 * self.bnstd_running + 0.001 * bnstdi
+      else:
+        if self.bngain.shape[-1] == z.shape[-1]:
+          z = self.bngain * (z - self.bnmean_running) / (self.bnstd_running + 1e-5) + self.bnbias 
+      '''
+      a = torch.tanh(z)
+      x = a
 
-        if self.train:
-          with torch.no_grad():
-              self.sbnmean_running = 0.999 * self.bnmean_running + 0.001 * bnmeani
-              self.bnstd_running = 0.999 * self.bnstd_running + 0.001 * bnstdi
-        
-        x = a
-
-    probs = nn.functional.softmax(x, dim=1) # (B, V), V = vocab_size
+    probs = nn.functional.softmax(z, dim=1) # (B, V), V = vocab_size
 
     return probs
 

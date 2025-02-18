@@ -5,9 +5,14 @@ from network_ds import Xtr, Ytr
 from hyperparameters import hyperparams
 from network import Network
 
+lossi = []
+
 def train():
   net = Network()
-  
+
+  # network data
+  print(f'Number of parameters: {net.num_params}')
+
   # hyperparameters
   steps = hyperparams['steps']
   batch_size = hyperparams['batch size']
@@ -20,6 +25,9 @@ def train():
 
     # forward pass
     probs = net.forward(x)
+
+    if i == 0:
+      sprobs = probs
 
     # calc loss
     loss = -probs[torch.arange(batch_size), Ytr[idxs]].log().mean()
@@ -36,27 +44,24 @@ def train():
     loss.backward()
 
     # gradient steps
-    lr = 0.1 if i < 100000 else 0.01
+    lr = 0.1 if i < (steps // 2) else 0.01
 
-    with torch.no_grad():
-      for p in net.params.values():
-          if isinstance(p, nn.ParameterList):
-            for j in p:
-                  if j.grad is not None:
-                      j -= lr * j.grad
-
-                      j.grad.zero_()
-          else:
-              if p.grad is not None:
-                  p -= lr * p.grad
-
-                  p.grad.zero_()
+    for p in net.params.values():
+      if isinstance(p, nn.ParameterList):
+        for j in p:
+          j.data += lr * -j.grad
+      else:
+        p.data += lr * -p.grad
 
     # stats
     if i % (steps * 0.1) == 0:
       print(f'step {i} / {steps} | loss: {loss.item():.3f}')
+    
+    lossi.append(loss.log10().item())
 
   print(f'step {steps} / {steps} | loss: {loss.item():.3f}')
 
   # save network params
   net.save()
+
+  return lossi, probs, sprobs
