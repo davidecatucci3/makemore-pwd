@@ -42,10 +42,11 @@ In the src folder there is the code:
 > training to see if the newtork was working well but this values can be make it much lower
 
 ### steps-train
+![step-loss](https://github.com/user-attachments/assets/b0ff7d02-6af3-425a-8aa0-1baaab24c134)
 
 This plot shows on the x axis the steps and on the y axis the loss of both train and validation data, the plot is a logarithmic base 10, I trained the network for 200.000 steps with a lr of 0.1 that decays after half of the steps to 0.01 and 400 neurons for the hidden layer, the plot shows that the train went quit well there is not too much overfitting or underfitting, and after half of the steps there is a steep descent of the loss due to the lr decay, the final train loss and validation loss on the entire dataset if 2.48 and 2.51
 
 ### histogram probs
-![006_0026](https://github.com/user-attachments/assets/4328287c-df0c-47fa-b64c-379314584f8d)
+![hist probs](https://github.com/user-attachments/assets/7f3d6871-6f29-4d08-9731-e27a8fdbee4c)
 
 This graph is  something that i really like and that helps me a lot for understand if the network is workig well, on the left there is probs tensor at the first step and on the right the prob tensor after all the steps, the right one is better because there are a lot of probabilities that are 0 and few from 0.6 to 0.82 more so that means that the network is quite sure about is prediction, on the right ther are more zeros that good but the other probs the one that make the final decison are in the range 0.22 to 0.27 that is very low and the network is very confused and random
