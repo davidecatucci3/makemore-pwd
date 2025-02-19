@@ -2,19 +2,21 @@ import torch.nn as nn
 import torch
 import time
 
-from network_ds import Xtr, Ytr
 from hyperparameters import hyperparams
+from network_ds import Xtr, Ytr
 from network import Network
 
 def train():
   net = Network()
   
+  # keep track of latency
   t0 = time.time()
   k = 0
 
   # network data
-  print(f'Number of parameters: {net.num_params}')
-
+  print(f'Layers structure: {net.layers}')
+  print(f'Number of parameters: {net.num_params} \n')
+  
   # hyperparameters
   steps = hyperparams['steps']
   batch_size = hyperparams['batch size']
@@ -23,10 +25,10 @@ def train():
   for i in range(steps):
     # network input
     idxs = torch.randint(0, Xtr.shape[0], size=(batch_size,))
-    x = net.C[Xtr[idxs]].view(-1, net.fan_in)
+    x_emb = net.C[Xtr[idxs]].view(-1, net.fan_in)
 
     # forward pass
-    probs = net.forward(x)
+    probs = net.forward(x_emb)
 
     # calc loss
     loss = -probs[torch.arange(batch_size), Ytr[idxs]].log().mean()
@@ -35,7 +37,7 @@ def train():
     for p in net.params.values():
       if isinstance(p, nn.ParameterList):
           for j in p:
-              j.grad = None # more efficenly to put None then 0
+              j.grad = None
       else:
         p.grad = None
 
@@ -67,7 +69,9 @@ def train():
 
       print(f'step {i} / {steps} | loss: {loss.item():.3f} | latency: {dt:.1f}s')
 
-  print(f'step {steps} / {steps} | loss: {loss.item():.3f}')
+  print(f'step {steps} / {steps} | loss: {loss.item():.3f} | latency: {dt:.1f}s')
 
   # save network params
   net.save()
+
+train()

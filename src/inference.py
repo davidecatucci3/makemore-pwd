@@ -1,29 +1,28 @@
-import matplotlib.pyplot as plt
 import torch
 
 from hyperparameters import hyperparams
 from network_ds import stoi, itos
 from network import Network
-from train import train
 
-# hyperparams
+# hyperparameters
 block_size = hyperparams['block size']
 
 # network
-train()
-
 net = Network(load=True)
 
 # inference (generate passwords)
-for i in range(20):
-  pwd = ''
+num_pwd_generated = 20
 
+for i in range(num_pwd_generated):
+  pwd = ''
+  
   x = [stoi['Σ']] * block_size
+  
   idx = None
 
   with torch.no_grad():
     while idx != stoi['ε']:
-      # create ntwork input
+      # create network input
       x_emb = net.C[x].view(-1, net.fan_in)
 
       # forward pass
