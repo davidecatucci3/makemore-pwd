@@ -36,3 +36,17 @@ In the src folder there is the code:
 ## How to use it
 
 ## Train data
+
+> [!IMPORTANT]  
+> My aim it was not to create the most accurate result form this network but just for a personal exercise, so i am showing the main data plot that i looked at during the
+> training to see if the newtork was working well but this values can be make it much lower
+
+### steps-train
+https://github.com/davidecatucci3/makemore-pwd/blob/main/doc/step-loss.png?raw=true![image](https://github.com/user-attachments/assets/190e88e9-2f61-4347-8f14-ec5c274f78c1)
+
+This plot shows on the x axis the steps and on the y axis the loss of both train and validation data, the plot is a logarithmic base 10, I trained the network for 200.000 steps with a lr of 0.1 that decays after half of the steps to 0.01 and 400 neurons for the hidden layer, the plot shows that the train went quit well there is not too much overfitting or underfitting, and after half of the steps there is a steep descent of the loss due to the lr decay, the final train loss and validation loss on the entire dataset if 2.48 and 2.51
+
+### histogram probs
+https://github.com/davidecatucci3/makemore-pwd/blob/main/doc/hist%20probs.png?raw=true![image](https://github.com/user-attachments/assets/13fd380b-5b3f-407c-ac78-66cecec3d8bd)
+
+This graph is  something that i really like and that helps me a lot for understand if the network is workig well, on the left there is probs tensor at the first step and on the right the prob tensor after all the steps, the right one is better because there are a lot of probabilities that are 0 and few from 0.5 more so that means that the network is quite sure about is prediction, on the right ther are more zeros that good but tht max prob values is less then 0.2 so the network is very confued and random
