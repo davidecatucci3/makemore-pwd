@@ -19,6 +19,19 @@ The hidden layer takes as input the (3 * emb_size) input and perform the operati
 The output layer takes the tensor of dimenison (fan_out) and perform the operaton softmax(a@W2 + b2), so the output is (vocab_size) that we call probs where each element represent the probaiblity to be the next character of the trigram, the element with the higher probability will be selected as next character
 
 ## Files
+### doc
+In the data folder there are the plots that i imported after the training of the network
+
+### data
+In the data folder there are three files: C.json, w.json and b.json, that are the parameters of the network saved after the trainig
+
+### src
+In the src folder there is the code:
+  - hyperparamters.py: all the hyperparamters of the newtork are there
+  - load_ds.py: this file load the dataset (passwords) and create the input dataset for the network
+  - network.py: code of the network
+  - train.py: code of the train process
+  - inference.py: if you wanna tru to generate some passwords you can do it there
 
 ## How to use it
 
