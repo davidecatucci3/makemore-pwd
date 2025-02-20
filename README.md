@@ -1,5 +1,5 @@
 # makemore-pwd
-makemore is ANN autoregressive model based on this paper: https://dl.acm.org/doi/pdf/10.5555/944919.944966, this project is inspired by @karpathy makemore project series,
+makemore is ANN autoregressive model based on this paper: https://dl.acm.org/doi/pdf/10.5555/944919.944966, this project is inspired by Andrej Karpathy makemore project series,
 the aim of this model is to create memorable passwords (passwords that are not randomized like: sd34sfdf, !!jsdi33z but more like: Katia12, rock!, 1234, etc...)
 
 ## Model architecture
