@@ -38,7 +38,7 @@ In the src folder there is the code:
 ## Train data
 
 > [!IMPORTANT]  
-> My aim it was not to create the most accurate results and the most efficeint network, i just did it for persona exercise, so I paid more attention at the code rather then the loss and the other data
+> My aim it was not to create the most accurate results and the most efficient network, i just did it for personal exercise, so I paid more attention at the code rather then the loss and the other data
 
 ### steps-train
 ![step-loss](https://github.com/user-attachments/assets/b0ff7d02-6af3-425a-8aa0-1baaab24c134)
